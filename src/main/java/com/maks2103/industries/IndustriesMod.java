@@ -14,9 +14,12 @@ public class IndustriesMod {
     public static final String VERSION = "0.1";
     public static ItemResearchBook researchBook = new ItemResearchBook();
 
+    public IndustriesMod() {
+        MinecraftForge.EVENT_BUS.register(this);
+    }
+
     @EventHandler
     public void onFMLInitialization(FMLInitializationEvent event) {
-        MinecraftForge.EVENT_BUS.register(this);
     }
 
     @SubscribeEvent
