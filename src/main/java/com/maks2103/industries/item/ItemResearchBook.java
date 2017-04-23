@@ -1,5 +1,7 @@
-package com.maks2103.industries;
+package com.maks2103.industries.item;
 
+import com.maks2103.industries.IndustriesMod;
+import com.maks2103.industries.registry.ModGuis;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.util.EnumActionResult;
@@ -16,7 +18,7 @@ public class ItemResearchBook extends Item {
 
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        player.openGui(IndustriesMod.instance, 0, world, pos.getX(), pos.getY(), pos.getZ());
+        player.openGui(IndustriesMod.getInstance(), ModGuis.RESEARCH_BOOK.getId(), world, pos.getX(), pos.getY(), pos.getZ());
         return EnumActionResult.SUCCESS;
     }
 }

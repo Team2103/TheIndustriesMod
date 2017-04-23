@@ -1,13 +1,12 @@
-package com.maks2103.industries;
+package com.maks2103.industries.gui;
 
+import com.maks2103.industries.container.ContainerResearchBook;
 import net.minecraft.client.gui.inventory.GuiContainer;
 
 public class GuiResearchBook extends GuiContainer {
-    public ContainerResearchBook container;
 
     public GuiResearchBook(ContainerResearchBook container) {
         super(container);
-        this.container = container;
     }
 
     @Override
