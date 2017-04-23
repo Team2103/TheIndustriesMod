@@ -1,1 +1,1 @@
-"# TheIndustriesMod" 
+# TheIndustriesMod
