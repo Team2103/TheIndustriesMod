@@ -10,15 +10,17 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class ItemResearchBook extends Item {
-    public ItemResearchBook() {
+public class ResearchBookItem extends Item {
+    public ResearchBookItem() {
         setRegistryName("research_book");
         setUnlocalizedName("research_book");
+        setCreativeTab(IndustriesMod.CREATIVE_TAB);
     }
 
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        player.openGui(IndustriesMod.getInstance(), ModGuis.RESEARCH_BOOK.getId(), world, pos.getX(), pos.getY(), pos.getZ());
+        if(!world.isRemote)
+            player.openGui(IndustriesMod.getInstance(), ModGuis.RESEARCH_BOOK.getId(), world, pos.getX(), pos.getY(), pos.getZ());
         return EnumActionResult.SUCCESS;
     }
 }

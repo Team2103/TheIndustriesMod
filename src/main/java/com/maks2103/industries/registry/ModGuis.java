@@ -1,9 +1,12 @@
 package com.maks2103.industries.registry;
 
-import com.maks2103.industries.container.ContainerResearchBook;
-import com.maks2103.industries.gui.GuiResearchBook;
+import com.maks2103.industries.container.AssemblerContainer;
+import com.maks2103.industries.container.ResearchBookContainer;
+import com.maks2103.industries.gui.AssemblerGui;
+import com.maks2103.industries.gui.ResearchBookGui;
 import com.maks2103.industries.handler.gui.GuiFactory;
 import com.maks2103.industries.handler.gui.GuiHandler;
+import com.maks2103.industries.tileEntity.AssemblerTileEntity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -14,10 +17,12 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * Register all {@link com.maks2103.industries.handler.gui.GuiFactory} for mod and contains it's ids
  */
 public enum ModGuis {
-    RESEARCH_BOOK(0);
+    RESEARCH_BOOK(0),
+    ASSEMBLER(1);
 
     static {
         GuiHandler.registerGuiFactory(new ResearchBookGuiFactory());
+        GuiHandler.registerGuiFactory(new AssemblerGuiFactory());
     }
 
     private final int id;
@@ -40,13 +45,31 @@ public enum ModGuis {
         @SideOnly(Side.CLIENT)
         @Override
         public Object getClientGuiElement(EntityPlayer player, World world, BlockPos blockPos) {
-            return new GuiResearchBook(new ContainerResearchBook());
+            return new ResearchBookGui(new ResearchBookContainer());
         }
 
-        @SideOnly(Side.SERVER)
         @Override
         public Object getServerGuiElement(EntityPlayer player, World world, BlockPos blockPos) {
-            return new ContainerResearchBook();
+            return new ResearchBookContainer();
+        }
+    }
+
+    private static final class AssemblerGuiFactory implements GuiFactory {
+
+        @Override
+        public int getId() {
+            return ASSEMBLER.getId();
+        }
+
+        @SideOnly(Side.CLIENT)
+        @Override
+        public Object getClientGuiElement(EntityPlayer player, World world, BlockPos blockPos) {
+            return new AssemblerGui(new AssemblerContainer(player.inventory, (AssemblerTileEntity) world.getTileEntity(blockPos)));
+        }
+
+        @Override
+        public Object getServerGuiElement(EntityPlayer player, World world, BlockPos blockPos) {
+            return new AssemblerContainer(player.inventory, (AssemblerTileEntity) world.getTileEntity(blockPos));
         }
     }
 }
