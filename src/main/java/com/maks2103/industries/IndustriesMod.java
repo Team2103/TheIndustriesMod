@@ -22,7 +22,7 @@ public class IndustriesMod {
     public static final String VERSION = "0.1";
     public static final String NAME = "Industries mod";
 
-    public static final CreativeTabs CREATIVE_TAB = new CreativeTabs(NAME) {
+    public static final CreativeTabs CREATIVE_TAB = new CreativeTabs(MODID) {
         @Override
         public ItemStack getTabIconItem() {
             return new ItemStack(Items.COMMAND_BLOCK_MINECART);

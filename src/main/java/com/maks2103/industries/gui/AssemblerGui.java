@@ -43,9 +43,9 @@ public class AssemblerGui extends GuiContainer {
         startX = (width - xSize) / 2;
         startY = (height - ySize) / 2;
 
-        addButton(new GuiButton(PREV_BUTTON, startX + 18 / 2, startY + 149 / 2, 53 / 2, 29 / 2, ""));
-        addButton(new GuiButton(NEXT_BUTTON, startX + 121 / 2, startY + 149 / 2, 53 / 2, 29 / 2, ""));
-        addButton(new GuiButton(START_BUTTON, startX + 84 / 2, startY + 149 / 2, 26 / 2, 27 / 2, ""));
+        addButton(new GuiButton(PREV_BUTTON, startX + 9, startY + 74, 26, 14, ""));
+        addButton(new GuiButton(NEXT_BUTTON, startX + 60, startY + 74, 26, 14, ""));
+        addButton(new GuiButton(START_BUTTON, startX + 42, startY + 74, 13, 13, ""));
     }
 
     @Override
@@ -80,22 +80,22 @@ public class AssemblerGui extends GuiContainer {
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         this.mc.getTextureManager().bindTexture(textureResourceLocation1);
-        drawTexturedModalRect(startX, startY, 0, 0, 512 / 2, 512 / 2);
+        drawTexturedModalRect(startX, startY, 0, 0, 256, 256); //Render first part
         this.mc.getTextureManager().bindTexture(textureResourceLocation2);
-        drawTexturedModalRect(startX + 512 / 2, startY, 0, 0, 30 / 2, 318 / 2);
+        drawTexturedModalRect(startX + 512 / 2, startY, 0, 0, 15, 159); //Render second part
 
         AssemblerTileEntity tileEntity = assemblerContainer.getAssemblerTileEntity();
         IEnergyStorage energyStorage = tileEntity.getEnergyStorage();
         float i = energyStorage.getEnergyStored() * 1F / energyStorage.getMaxEnergyStored() * 100;
-        int height = (int) ((123F / 100) * i) / 2 + ((i > 0) ? 1 : 0);
-        drawTexturedModalRect(startX + 478 / 2, startY + 310 / 2 - height, 84 / 2, 67, 26, height);
+        int height = (int) (0.615f * i) + ((i > 0) ? 1 : 0);
+        drawTexturedModalRect(startX + 239, startY + 155 - height, 42, 67, 26, height); // Draw containing energy
 
         AssemblerRecipe recipe;
         if((recipe = tileEntity.getCurrentRecipe()) != null) {
-            int j = 0;
+            int j = 0; //Count lines
             for(ItemStack itemStack : recipe.getCraftItems()) {
-                String str = fontRendererObj.trimStringToWidth(String.valueOf(itemStack.getCount()) + "x" + itemStack.getDisplayName(), 200);
-                fontRendererObj.drawString(str, startX + 290 / 2 + 2, startY + 2 + 14 / 2 + j * fontRendererObj.getWordWrappedHeight(str, 200), LIST_TEXT_COLOR);
+                String str = fontRendererObj.trimStringToWidth(String.valueOf(itemStack.getCount()) + 'x' + itemStack.getDisplayName(), 200); //Amount + 'x' + displayName
+                fontRendererObj.drawString(str, startX + 147, startY + 9 + j * fontRendererObj.getWordWrappedHeight(str, 200), LIST_TEXT_COLOR);
                 j++;
             }
         }
@@ -105,16 +105,16 @@ public class AssemblerGui extends GuiContainer {
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
 
         this.mc.getTextureManager().bindTexture(textureResourceLocation2);
-        drawTexturedModalRect(9, 74, 31 / 2 + 1, 290 / 2 - 1, 54 / 2, 30 / 2);
-        drawTexturedModalRect(120 / 2, 74, 86 / 2, 290 / 2 - 1, 54 / 2, 30 / 2);
+        drawTexturedModalRect(9, 74, 16, 144, 27, 15); //Render prev button
+        drawTexturedModalRect(60, 74, 43, 144, 27, 15); //Render next button
 
         if(assemblerContainer.getAssemblerTileEntity().canCraft()) {
-            drawTexturedModalRect(82 / 2, 149 / 2, 168 / 2, 291 / 2, 28 / 2, 28 / 2);
+            drawTexturedModalRect(41, 74, 84, 145, 14, 14); //Render green start button
         } else {
-            drawTexturedModalRect(82 / 2, 149 / 2, 140 / 2, 291 / 2, 28 / 2, 28 / 2);
+            drawTexturedModalRect(41, 74, 70, 145, 14, 14); //Render red start button
         }
 
-        drawTexturedModalRect(145, 12 / 2, 30, 0, 205 / 2, 132 / 2);
-        drawTexturedModalRect(478 / 2, 187 / 2, 31 / 2, 133 / 2 + 1, 26, 62);
+        drawTexturedModalRect(145, 6, 30, 0, 102, 66); //Render required items screen helper
+        drawTexturedModalRect(239, 93, 15, 67, 26, 62); //Render energy screen helper
     }
 }
