@@ -5,6 +5,7 @@ import com.maks2103.industries.container.AssemblerContainer;
 import com.maks2103.industries.tileEntity.AssemblerTileEntity;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.energy.IEnergyStorage;
@@ -103,6 +104,7 @@ public class AssemblerGui extends GuiContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        GlStateManager.enableBlend();
 
         this.mc.getTextureManager().bindTexture(textureResourceLocation2);
         drawTexturedModalRect(9, 74, 16, 144, 27, 15); //Render prev button
@@ -116,5 +118,7 @@ public class AssemblerGui extends GuiContainer {
 
         drawTexturedModalRect(145, 6, 30, 0, 102, 66); //Render required items screen helper
         drawTexturedModalRect(239, 93, 15, 67, 26, 62); //Render energy screen helper
+
+        GlStateManager.disableBlend();
     }
 }

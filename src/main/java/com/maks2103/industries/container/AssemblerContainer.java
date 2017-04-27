@@ -21,13 +21,13 @@ public class AssemblerContainer extends Container {
 
         for(int i = 0; i < 3; i++) {
             for(int j = 0; j < 3; j++) {
-                addSlotToContainer(new SlotItemHandler(itemHandler, index++, 180 / 2 + 29 * i, 59 / 2 + 29 * j));
+                addSlotToContainer(new SlotItemHandler(itemHandler, index++, 180 / 2 + 34 / 2 * i + 1, 59 / 2 + 34 / 2 * j + 1));
             }
         }
 
         for(int i = 0; i < 4; i++) {
             for(int j = 0; j < 9; j++) {
-                addSlotToContainer(new Slot(playerInventory, index++, 181 / 2 + j * 29, 198 / 2 + i * 29));
+                addSlotToContainer(new Slot(playerInventory, (i == 3) ? j : (i * 9 + j + 9), 165 / 2 + j * 34 / 2, 182 / 2 + i * 34 / 2));
             }
         }
     }
