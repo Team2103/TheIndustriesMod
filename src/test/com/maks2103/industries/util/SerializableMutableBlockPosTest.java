@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 
 public class SerializableMutableBlockPosTest {
     @Test
-    public void serializeNadDeserialize() throws Exception {
+    public void serializeAndDeserialize() throws Exception {
         SerializableMutableBlockPos blockPos = new SerializableMutableBlockPos(1, 2, 4);
         NBTTagCompound compound = blockPos.serializeNBT();
 

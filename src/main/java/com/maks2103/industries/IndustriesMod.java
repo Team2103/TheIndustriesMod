@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
 @SuppressWarnings("unused")
 @Mod(modid = IndustriesMod.MODID, version = IndustriesMod.VERSION, name = IndustriesMod.NAME)
@@ -29,6 +30,8 @@ public class IndustriesMod {
         }
     };
 
+    private static SimpleNetworkWrapper NETWORK_WRAPPER;
+
     @Mod.Instance
     private static IndustriesMod instance;
 
@@ -38,6 +41,7 @@ public class IndustriesMod {
 
     @EventHandler
     public void onFMLPreInitialization(FMLPreInitializationEvent event) {
+        NETWORK_WRAPPER = new SimpleNetworkWrapper(MODID);
         getProxy().preInit(event);
     }
 
@@ -67,5 +71,9 @@ public class IndustriesMod {
 
     public static IndustriesMod getInstance() {
         return instance;
+    }
+
+    public static SimpleNetworkWrapper getNetworkWrapper() {
+        return NETWORK_WRAPPER;
     }
 }
