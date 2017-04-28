@@ -23,9 +23,6 @@ public class NBTSerializableSerializerTest {
             this.string = string;
         }
 
-        public TestNBTSerializableClass() {
-        }
-
         @Nonnull
         @Override
         public NBTTagCompound serializeNBT() {

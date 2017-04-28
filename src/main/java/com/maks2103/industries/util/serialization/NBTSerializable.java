@@ -1,6 +1,7 @@
 package com.maks2103.industries.util.serialization;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -11,7 +12,7 @@ import java.io.Serializable;
  *
  * @see NBTSerializableSerializer
  */
-public interface NBTSerializable extends Serializable {
+public interface NBTSerializable extends Serializable, INBTSerializable<NBTTagCompound> {
     /**
      * Serialize all important data to nbt
      */
