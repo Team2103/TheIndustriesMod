@@ -2,8 +2,10 @@ package com.maks2103.industries.proxy;
 
 import com.maks2103.industries.IndustriesMod;
 import com.maks2103.industries.assembler.AssemblerRecipeManager;
+import com.maks2103.industries.assembler.TestAsseblerRecipe2;
 import com.maks2103.industries.assembler.TestAssemblerRecipe;
 import com.maks2103.industries.handler.gui.GuiHandler;
+import com.maks2103.industries.net.CallRemoteMethodMessage;
 import com.maks2103.industries.registry.ModBlocks;
 import com.maks2103.industries.registry.ModItems;
 import com.maks2103.industries.registry.ModTileEntities;
@@ -15,6 +17,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class CommonProxy {
     @SidedProxy
@@ -33,6 +36,9 @@ public class CommonProxy {
         ModTileEntities.register();
 
         AssemblerRecipeManager.addRecipe(new TestAssemblerRecipe());
+        AssemblerRecipeManager.addRecipe(new TestAsseblerRecipe2());
+
+        IndustriesMod.getNetworkWrapper().registerMessage(CallRemoteMethodMessage.Handler.class, CallRemoteMethodMessage.class, 0, Side.SERVER);
     }
 
     public void postInit(FMLPostInitializationEvent event) {
@@ -51,5 +57,11 @@ public class CommonProxy {
     }
 
     public static class ClientProxy extends CommonProxy {
+        @Override
+        public void init(FMLInitializationEvent event) {
+            super.init(event);
+
+            IndustriesMod.getNetworkWrapper().registerMessage(CallRemoteMethodMessage.Handler.class, CallRemoteMethodMessage.class, 0, Side.CLIENT);
+        }
     }
 }

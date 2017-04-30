@@ -6,6 +6,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public final class Utils {
     private Utils() {
@@ -44,7 +45,9 @@ public final class Utils {
     }
 
     static List<ItemStack> fixItemStackList(List<ItemStack> inSrc) {
-        List<ItemStack> in = new ArrayList<>(inSrc);
+        List<ItemStack> in = inSrc.stream()
+                .filter(itemStack -> !itemStack.isEmpty())
+                .collect(Collectors.toCollection(ArrayList::new));
         boolean containsDuplicates = true;
         while(containsDuplicates) {
             containsDuplicates = false;

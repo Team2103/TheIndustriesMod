@@ -2,16 +2,21 @@ package com.maks2103.industries.gui;
 
 import com.maks2103.industries.assembler.AssemblerRecipe;
 import com.maks2103.industries.container.AssemblerContainer;
+import com.maks2103.industries.net.RemoteCaller;
 import com.maks2103.industries.tileEntity.AssemblerTileEntity;
+import com.maks2103.industries.util.SerializableMutableBlockPos;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 public class AssemblerGui extends GuiContainer {
     /**
@@ -22,6 +27,21 @@ public class AssemblerGui extends GuiContainer {
     private static final int PREV_BUTTON = 1;
     private static final int NEXT_BUTTON = 2;
     private static final int START_BUTTON = 3;
+
+    private static final Method PREW_RECIPE_METHOD;
+    private static final Method NEXT_RECIPE_METHOD;
+    private static final Method TRY_CRAFT_METHOD;
+
+    static {
+        try {
+            Class<?> clazz = AssemblerTileEntity.RemoteMethods.class;
+            PREW_RECIPE_METHOD = clazz.getDeclaredMethod("prewRecipe", MessageContext.class, SerializableMutableBlockPos.class);
+            NEXT_RECIPE_METHOD = clazz.getDeclaredMethod("nextRecipe", MessageContext.class, SerializableMutableBlockPos.class);
+            TRY_CRAFT_METHOD = clazz.getDeclaredMethod("tryCraft", MessageContext.class, SerializableMutableBlockPos.class);
+        } catch (NoSuchMethodException e) {
+            throw new Error(e);
+        }
+    }
 
     private static final ResourceLocation textureResourceLocation1 = new ResourceLocation("industries:textures/gui/assemblergui1.png");
     private static final ResourceLocation textureResourceLocation2 = new ResourceLocation("industries:textures/gui/assemblergui2.png");
@@ -59,7 +79,7 @@ public class AssemblerGui extends GuiContainer {
                 nextRecipe();
                 break;
             case START_BUTTON:
-                tryStart();
+                tryCraft();
                 break;
             default:
                 System.err.println("Unexpected button id " + button.id);
@@ -67,15 +87,15 @@ public class AssemblerGui extends GuiContainer {
     }
 
     private void previousRecipe() {
-
+        RemoteCaller.callRemote(PREW_RECIPE_METHOD, Side.CLIENT, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
     }
 
     private void nextRecipe() {
-
+        RemoteCaller.callRemote(NEXT_RECIPE_METHOD, Side.CLIENT, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
     }
 
-    private void tryStart() {
-
+    private void tryCraft() {
+        RemoteCaller.callRemote(TRY_CRAFT_METHOD, Side.CLIENT, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
     }
 
     @Override
@@ -120,5 +140,13 @@ public class AssemblerGui extends GuiContainer {
         drawTexturedModalRect(239, 93, 15, 67, 26, 62); //Render energy screen helper
 
         GlStateManager.disableBlend();
+
+        AssemblerRecipe recipe;
+        if((recipe = assemblerContainer.getAssemblerTileEntity().getCurrentRecipe()) != null) {
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(90 / 2, 134 / 2, 1);
+            recipe.getPreviewModel().render();
+            GlStateManager.popMatrix();
+        }
     }
 }

@@ -5,6 +5,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
@@ -39,5 +40,12 @@ public class AssemblerContainer extends Container {
     @Override
     public boolean canInteractWith(@Nonnull EntityPlayer playerIn) {
         return true;
+    }
+
+    @Nonnull
+    @Override
+    public ItemStack transferStackInSlot(@Nonnull EntityPlayer playerIn, int index) {
+        Slot slot = this.inventorySlots.get(index);
+        return slot != null ? slot.getStack() : ItemStack.EMPTY;
     }
 }

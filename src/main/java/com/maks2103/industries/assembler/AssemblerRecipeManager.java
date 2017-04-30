@@ -1,6 +1,7 @@
 package com.maks2103.industries.assembler;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
+import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,7 +29,26 @@ public final class AssemblerRecipeManager {
         return recipes.get(id);
     }
 
-    private List<AssemblerRecipe> getRecipes() {
-        return Collections.unmodifiableList(new ArrayList<AssemblerRecipe>(recipes.valueCollection()));
+    @Nonnull
+    public static List<AssemblerRecipe> getRecipes() {
+        return Collections.unmodifiableList(new ArrayList<>(recipes.valueCollection()));
+    }
+
+    @Nonnull
+    public static NBTTagCompound toNBT(@Nullable AssemblerRecipe recipe) {
+        if(recipe == null) {
+            return new NBTTagCompound();
+        }
+        NBTTagCompound compound = new NBTTagCompound();
+        compound.setInteger("id", recipe.getId());
+        return compound;
+    }
+
+    @Nullable
+    public static AssemblerRecipe fromNBT(@Nonnull NBTTagCompound compound) {
+        if(compound.hasKey("id"))
+            return getForId(compound.getInteger("id"));
+        else
+            return null;
     }
 }

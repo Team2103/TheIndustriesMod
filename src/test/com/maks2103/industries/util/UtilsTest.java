@@ -25,7 +25,9 @@ public class UtilsTest {
         List<ItemStack> list = Arrays.asList(new ItemStack(Items.APPLE, 10),
                 new ItemStack(Items.ARROW, 90),
                 new ItemStack(Items.APPLE, 100),
-                new ItemStack(Blocks.BRICK_BLOCK, 10));
+                new ItemStack(Blocks.BRICK_BLOCK, 10),
+                ItemStack.EMPTY,
+                new ItemStack(Blocks.AIR));
         List<ItemStack> n = Utils.fixItemStackList(list);
         assertSame(n.get(0).getCount(), 110);
         assertSame(n.get(1).getCount(), 90);
@@ -34,6 +36,8 @@ public class UtilsTest {
         assertEquals(n.get(0).getItem(), Items.APPLE);
         assertEquals(n.get(1).getItem(), Items.ARROW);
         assertEquals(n.get(2).getItem(), Item.getItemFromBlock(Blocks.BRICK_BLOCK));
+
+        assertSame(n.size(), 3);
     }
 
     @Test
