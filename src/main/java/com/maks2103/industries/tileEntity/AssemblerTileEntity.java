@@ -13,6 +13,7 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
@@ -21,21 +22,20 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.ListIterator;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-public class AssemblerTileEntity extends TileEntity implements SerializableEnergyStorage.Listener, ListenableItemStackHandler.Listener {
+public class AssemblerTileEntity extends TileEntity implements SerializableEnergyStorage.Listener, ListenableItemStackHandler.Listener, ITickable {
     private static final int MAX_ENERGY = 64000;
     private static final int MAX_RECEIVE = 30;
-    private static final Timer TIMER = new Timer("AssemblerTileEntity-craft-timer", true);
 
     private final ListenableItemStackHandler itemHandler;
     private final SerializableEnergyStorage energyStorage;
@@ -46,14 +46,16 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
 
     private AtomicReference<State> state;
     private AtomicReference<ItemStack> output;
+    private int progress;
 
     public AssemblerTileEntity() {
         itemHandler = new ListenableItemStackHandler(9);
         itemHandler.setListener(this);
-        energyStorage = new SerializableEnergyStorage(MAX_ENERGY, MAX_RECEIVE, -1);
+        energyStorage = new SerializableEnergyStorage(MAX_ENERGY, MAX_RECEIVE, 30);
         energyStorage.setListener(this);
         state = new AtomicReference<>(State.READY);
         output = new AtomicReference<>(ItemStack.EMPTY);
+        progress = 0;
         validate();
 
         checkCraftState();
@@ -122,7 +124,9 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
 
         canCraft = compound.getBoolean("canCraft");
         currentRecipe = AssemblerRecipeManager.fromNBT(compound.getCompoundTag("recipe"));
-
+        String state = compound.getString("state");
+        this.state.set(State.valueOf(state.isEmpty() ? State.READY.name() : state));
+        progress = compound.getInteger("progress");
     }
 
     @Nonnull
@@ -133,6 +137,8 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         nbtTagCompound.setTag("energy", energyStorage.serializeNBT());
         nbtTagCompound.setBoolean("canCraft", canCraft);
         nbtTagCompound.setTag("recipe", AssemblerRecipeManager.toNBT(currentRecipe));
+        nbtTagCompound.setString("state", state.get().name());
+        nbtTagCompound.setInteger("progress", progress);
         return nbtTagCompound;
     }
 
@@ -152,17 +158,21 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
 
     @Override
     public void onReceive(boolean simulate) {
+        checkEnergy(simulate);
+    }
+
+    @Override
+    public void onExtract(boolean simulate) {
+        checkEnergy(simulate);
+    }
+
+    private void checkEnergy(boolean simulate) {
         if(!simulate && !world.isRemote && lastEnergy != energyStorage.getEnergyStored()) {
             this.markDirty();
             IBlockState blockState = world.getBlockState(getPos());
             world.notifyBlockUpdate(getPos(), blockState, blockState, 3);
             lastEnergy = energyStorage.getEnergyStored();
         }
-    }
-
-    @Override
-    public void onExtract(boolean simulate) {
-
     }
 
     private void prewRecipe() {
@@ -186,23 +196,54 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
     }
 
     private void tryCraft() {
-        if(canCraft) {
+        if(canCraft && state.get() == State.READY) {
             AssemblerRecipe recipe = currentRecipe;
             state.set(State.CRAFTING);
             takeItems(recipe);
-            TIMER.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    System.out.println("Complete");
-                    output.set(recipe.getOutputItem());
-                    state.set(State.DONE);
-                }
-            }, currentRecipe.getCraftingTime() * 1000);
+//            TIMER.schedule(new TimerTask() {
+//                @Override
+//                public void run() {
+//                    System.out.println("Complete");
+//                    output.set(recipe.getOutputItem().copy());
+//                    state.set(State.DONE);
+//                }
+//            }, currentRecipe.getCraftingTime() * 1000);
+            progress = currentRecipe.getCraftingTime() * 20; //x sec * 20 ticks/sec
         }
     }
 
     private void takeItems(AssemblerRecipe recipe) {
+        List<ItemStack> splicedIn = Utils.spliceItemStackList(Arrays.asList(recipe.getCraftItems()));
+        List<ItemStack> ourInv = getInventoryItemStacks();
 
+        ListIterator<ItemStack> inIterator = splicedIn.listIterator();
+
+        while(inIterator.hasNext()) {
+            ItemStack nextRequiredItem = inIterator.next();
+            int[] inElemOreDictIds = OreDictionary.getOreIDs(nextRequiredItem);
+            ListIterator<ItemStack> tileInvIterator = ourInv.listIterator();
+            for(int slot = 0; tileInvIterator.hasNext(); slot++) {
+                ItemStack nextInv = tileInvIterator.next();
+                if(nextInv.isEmpty()) continue;
+
+                int[] outElemOreDictIds = OreDictionary.getOreIDs(nextInv);
+                if(nextRequiredItem.getItem() == nextInv.getItem() || Utils.containsAny(inElemOreDictIds, outElemOreDictIds)) {
+                    if(nextRequiredItem.getCount() > nextInv.getCount()) {
+                        tileInvIterator.remove();
+                        itemHandler.setStackInSlot(slot, ItemStack.EMPTY);
+                        nextRequiredItem.setCount(nextRequiredItem.getCount() - nextInv.getCount());
+                    } else if(nextRequiredItem.getCount() == nextInv.getCount()) {
+                        tileInvIterator.remove();
+                        itemHandler.setStackInSlot(slot, ItemStack.EMPTY);
+                        inIterator.remove();
+                    } else {
+                        inIterator.remove();
+                        nextInv.setCount(nextInv.getCount() - nextRequiredItem.getCount());
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -223,7 +264,7 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
             canCraft = false;
             return;
         }
-        дада canCraft = Utils.allMatch(getInventoryItemStacks(), Arrays.asList(currentRecipe.getCraftItems()));
+        canCraft = Utils.allMatch(getInventoryItemStacks(), Arrays.asList(currentRecipe.getCraftItems()));
     }
 
     private List<ItemStack> getInventoryItemStacks() {
@@ -232,6 +273,22 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
             ret.add(itemHandler.getStackInSlot(i));
         }
         return ret;
+    }
+
+    @Override
+    public void update() {
+        if(!world.isRemote && state.get() == State.CRAFTING) {
+            int extracted = energyStorage.extractEnergy(30, false);
+            if(extracted == 0) return;
+
+            if(progress > 0)
+                progress--;
+            else {
+                progress = 0;
+                state.set(State.DONE);
+                output.set(currentRecipe.getOutputItem().copy());
+            }
+        }
     }
 
     public static final class RemoteMethods {

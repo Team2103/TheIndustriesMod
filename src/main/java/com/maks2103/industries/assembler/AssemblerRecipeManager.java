@@ -36,9 +36,7 @@ public final class AssemblerRecipeManager {
 
     @Nonnull
     public static NBTTagCompound toNBT(@Nullable AssemblerRecipe recipe) {
-        if(recipe == null) {
-            return new NBTTagCompound();
-        }
+        if(recipe == null) return new NBTTagCompound();
         NBTTagCompound compound = new NBTTagCompound();
         compound.setInteger("id", recipe.getId());
         return compound;

@@ -21,14 +21,14 @@ public class UtilsTest {
     }
 
     @Test
-    public void fixItemStackList() throws Exception {
+    public void spliceItemStackList() throws Exception {
         List<ItemStack> list = Arrays.asList(new ItemStack(Items.APPLE, 10),
                 new ItemStack(Items.ARROW, 90),
                 new ItemStack(Items.APPLE, 100),
                 new ItemStack(Blocks.BRICK_BLOCK, 10),
                 ItemStack.EMPTY,
                 new ItemStack(Blocks.AIR));
-        List<ItemStack> n = Utils.fixItemStackList(list);
+        List<ItemStack> n = Utils.spliceItemStackList(list);
         assertSame(n.get(0).getCount(), 110);
         assertSame(n.get(1).getCount(), 90);
         assertSame(n.get(2).getCount(), 10);
