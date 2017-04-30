@@ -3,6 +3,7 @@ package com.maks2103.industries.registry;
 import com.maks2103.industries.container.AssemblerContainer;
 import com.maks2103.industries.container.ResearchBookContainer;
 import com.maks2103.industries.gui.AssemblerGui;
+import com.maks2103.industries.gui.AssemblerOutputGui;
 import com.maks2103.industries.gui.ResearchBookGui;
 import com.maks2103.industries.handler.gui.GuiFactory;
 import com.maks2103.industries.handler.gui.GuiHandler;
@@ -18,11 +19,13 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  */
 public enum ModGuis {
     RESEARCH_BOOK(0),
-    ASSEMBLER(1);
+    ASSEMBLER(1),
+    ASSEMBLER_OUTPUT(2);
 
     static {
         GuiHandler.registerGuiFactory(new ResearchBookGuiFactory());
         GuiHandler.registerGuiFactory(new AssemblerGuiFactory());
+        GuiHandler.registerGuiFactory(new AssemblerOutputGuiFacotry());
     }
 
     private final int id;
@@ -65,6 +68,25 @@ public enum ModGuis {
         @Override
         public Object getClientGuiElement(EntityPlayer player, World world, BlockPos blockPos) {
             return new AssemblerGui(new AssemblerContainer(player.inventory, (AssemblerTileEntity) world.getTileEntity(blockPos)));
+        }
+
+        @Override
+        public Object getServerGuiElement(EntityPlayer player, World world, BlockPos blockPos) {
+            return new AssemblerContainer(player.inventory, (AssemblerTileEntity) world.getTileEntity(blockPos));
+        }
+    }
+
+    private static final class AssemblerOutputGuiFacotry implements GuiFactory {
+
+        @Override
+        public int getId() {
+            return ASSEMBLER_OUTPUT.getId();
+        }
+
+        @SideOnly(Side.CLIENT)
+        @Override
+        public Object getClientGuiElement(EntityPlayer player, World world, BlockPos blockPos) {
+            return new AssemblerOutputGui(new AssemblerContainer(player.inventory, (AssemblerTileEntity) world.getTileEntity(blockPos)));
         }
 
         @Override

@@ -80,6 +80,12 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
     public ItemStack takeOutput() {
         ItemStack out = output.get();
         output.set(ItemStack.EMPTY);
+        state.set(State.READY);
+
+        markDirty();
+        IBlockState blockState = world.getBlockState(getPos());
+        world.notifyBlockUpdate(getPos(), blockState, blockState, 3);
+
         return out;
     }
 
@@ -127,6 +133,7 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         String state = compound.getString("state");
         this.state.set(State.valueOf(state.isEmpty() ? State.READY.name() : state));
         progress = compound.getInteger("progress");
+        output.set(new ItemStack(compound.getCompoundTag("output")));
     }
 
     @Nonnull
@@ -139,6 +146,11 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         nbtTagCompound.setTag("recipe", AssemblerRecipeManager.toNBT(currentRecipe));
         nbtTagCompound.setString("state", state.get().name());
         nbtTagCompound.setInteger("progress", progress);
+
+        NBTTagCompound outputTag = new NBTTagCompound();
+        output.get().writeToNBT(outputTag);
+        nbtTagCompound.setTag("output", outputTag);
+
         return nbtTagCompound;
     }
 

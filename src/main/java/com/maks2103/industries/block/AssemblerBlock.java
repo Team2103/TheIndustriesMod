@@ -36,14 +36,14 @@ public class AssemblerBlock extends BlockContainer {
         if(!worldIn.isRemote) {
             AssemblerTileEntity tileEntity = (AssemblerTileEntity) worldIn.getTileEntity(pos);
             if(tileEntity != null) {
-//                tileEntity.markDirty();
-//                IBlockState blockState = worldIn.getBlockState(pos);
-//                worldIn.notifyBlockUpdate(pos, blockState, blockState, 3);
-//            }
+                tileEntity.markDirty();
+                IBlockState blockState = worldIn.getBlockState(pos);
+                worldIn.notifyBlockUpdate(pos, blockState, blockState, 3);
+
                 if(tileEntity.getState() == AssemblerTileEntity.State.READY)
                     playerIn.openGui(IndustriesMod.getInstance(), ModGuis.ASSEMBLER.getId(), worldIn, pos.getX(), pos.getY(), pos.getZ());
-//                else if(tileEntity.getState() == AssemblerTileEntity.State.DONE)
-
+                else if(tileEntity.getState() == AssemblerTileEntity.State.DONE)
+                    playerIn.openGui(IndustriesMod.getInstance(), ModGuis.ASSEMBLER_OUTPUT.getId(), worldIn, pos.getX(), pos.getY(), pos.getZ());
             }
         }
         return true;
