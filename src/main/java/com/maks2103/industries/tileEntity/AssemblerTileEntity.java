@@ -97,21 +97,14 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         return output.get();
     }
 
-    @SuppressWarnings("MethodCallSideOnly") // Method closeScreen called in remote world
     public ItemStack takeOutput() {
         ItemStack out = output.get();
         output.set(ItemStack.EMPTY);
         state.set(State.READY);
 
-        markDirty();
-        IBlockState blockState = world.getBlockState(getPos());
-        world.notifyBlockUpdate(getPos(), blockState, blockState, 3);
+        sync();
 
         return out;
-    }
-
-    public void setCurrentRecipe(AssemblerRecipe currentRecipe) {
-        this.currentRecipe = currentRecipe;
     }
 
     @Override
@@ -199,15 +192,19 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         checkEnergy(simulate);
     }
 
+    /**
+     * Check energy. If it changed and not simulated - send changes. Works only on server side
+     */
     private void checkEnergy(boolean simulate) {
         if(!simulate && !world.isRemote && lastEnergy != energyStorage.getEnergyStored()) {
-            this.markDirty();
-            IBlockState blockState = world.getBlockState(getPos());
-            world.notifyBlockUpdate(getPos(), blockState, blockState, 3);
+            sync();
             lastEnergy = energyStorage.getEnergyStored();
         }
     }
 
+    /**
+     * Synchronize tileEntity between clients and server
+     */
     public void sync() {
         markDirty();
         IBlockState state = getWorld().getBlockState(getPos());
@@ -219,9 +216,8 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         int idx = (currentRecipe == null) ? 0 : recipes.indexOf(currentRecipe);
         currentRecipe = (idx - 1 < 0) ? recipes.get(recipes.size() - 1) : recipes.get(idx - 1);
 
-        IBlockState blockState = world.getBlockState(getPos());
         checkCraftState();
-        world.notifyBlockUpdate(getPos(), blockState, blockState, 3);
+        sync();
     }
 
     private void nextRecipe() {
@@ -229,12 +225,10 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         int idx = (currentRecipe == null) ? 0 : recipes.indexOf(currentRecipe);
         currentRecipe = (idx + 1 == recipes.size()) ? recipes.get(0) : recipes.get(idx + 1);
 
-        IBlockState blockState = world.getBlockState(getPos());
         checkCraftState();
-        world.notifyBlockUpdate(getPos(), blockState, blockState, 3);
+        sync();
     }
 
-    @SuppressWarnings("MethodCallSideOnly") // Method closeScreen called in remote world
     private void tryCraft() {
         if(canCraft && state.get() == State.READY) {
             AssemblerRecipe recipe = currentRecipe;
@@ -245,7 +239,11 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
             RemoteCaller.callRemote(CRAFT_OK_METHOD, Side.CLIENT);
         }
     }
-    private void takeItems(AssemblerRecipe recipe) {
+
+    /**
+     * Take items for recipe
+     */
+    private void takeItems(@Nonnull AssemblerRecipe recipe) {
         List<ItemStack> splicedIn = Utils.spliceItemStackList(Arrays.asList(recipe.getCraftItems()));
         List<ItemStack> ourInv = getInventoryItemStacks();
 
@@ -283,14 +281,11 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
     public void onContentsChanged(int slot) {
         boolean last = canCraft;
         checkCraftState();
-        if(canCraft != last) {
-            IBlockState blockState = world.getBlockState(getPos());
-            world.notifyBlockUpdate(getPos(), blockState, blockState, 3);
-        }
+        if(canCraft != last) sync();
     }
 
     /**
-     * Do not notify update
+     * Do not update tileEntity
      */
     public void checkCraftState() {
         if(currentRecipe == null) {

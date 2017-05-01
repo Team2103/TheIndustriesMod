@@ -12,8 +12,8 @@ public class AssemblerOutputGui extends GuiContainer {
 
     public AssemblerOutputGui(Container inventorySlotsIn) {
         super(inventorySlotsIn);
-        xSize = 512 / 2;
-        ySize = 284 / 2;
+        xSize = 256;
+        ySize = 142;
     }
 
     @Override

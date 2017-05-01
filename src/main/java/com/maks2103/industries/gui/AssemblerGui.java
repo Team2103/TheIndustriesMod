@@ -89,15 +89,15 @@ public class AssemblerGui extends GuiContainer {
     }
 
     private void previousRecipe() {
-        RemoteCaller.callRemote(PREW_RECIPE_METHOD, Side.SERVER, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
+        RemoteCaller.callRemote(PREW_RECIPE_METHOD, Side.SERVER, new SerializableMutableBlockPos(assemblerContainer.getTileEntity().getPos()));
     }
 
     private void nextRecipe() {
-        RemoteCaller.callRemote(NEXT_RECIPE_METHOD, Side.SERVER, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
+        RemoteCaller.callRemote(NEXT_RECIPE_METHOD, Side.SERVER, new SerializableMutableBlockPos(assemblerContainer.getTileEntity().getPos()));
     }
 
     private void tryCraft() {
-        RemoteCaller.callRemote(TRY_CRAFT_METHOD, Side.SERVER, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
+        RemoteCaller.callRemote(TRY_CRAFT_METHOD, Side.SERVER, new SerializableMutableBlockPos(assemblerContainer.getTileEntity().getPos()));
     }
 
     @SideOnly(Side.CLIENT)
@@ -112,7 +112,7 @@ public class AssemblerGui extends GuiContainer {
         this.mc.getTextureManager().bindTexture(textureResourceLocation2);
         drawTexturedModalRect(startX + 512 / 2, startY, 0, 0, 15, 159); //Render second part
 
-        AssemblerTileEntity tileEntity = assemblerContainer.getAssemblerTileEntity();
+        AssemblerTileEntity tileEntity = assemblerContainer.getTileEntity();
         IEnergyStorage energyStorage = tileEntity.getEnergyStorage();
         float i = energyStorage.getEnergyStored() * 1F / energyStorage.getMaxEnergyStored() * 100;
         int height = (int) (0.615f * i) + ((i > 0) ? 1 : 0);
@@ -137,7 +137,7 @@ public class AssemblerGui extends GuiContainer {
         drawTexturedModalRect(9, 74, 16, 144, 27, 15); //Render prev button
         drawTexturedModalRect(60, 74, 43, 144, 27, 15); //Render next button
 
-        if(assemblerContainer.getAssemblerTileEntity().canCraft()) {
+        if(assemblerContainer.getTileEntity().canCraft()) {
             drawTexturedModalRect(41, 74, 84, 145, 14, 14); //Render green start button
         } else {
             drawTexturedModalRect(41, 74, 70, 145, 14, 14); //Render red start button
@@ -149,9 +149,9 @@ public class AssemblerGui extends GuiContainer {
         GlStateManager.disableBlend();
 
         AssemblerRecipe recipe;
-        if((recipe = assemblerContainer.getAssemblerTileEntity().getCurrentRecipe()) != null) {
+        if((recipe = assemblerContainer.getTileEntity().getCurrentRecipe()) != null) {
             GlStateManager.pushMatrix();
-            GlStateManager.translate(90 / 2, 134 / 2, 1);
+            GlStateManager.translate(26.5f, 5, 1);
             recipe.getPreviewModel().render();
             GlStateManager.popMatrix();
         }

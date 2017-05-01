@@ -13,6 +13,8 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 
 /**
+ * This class call messages on clients/server.
+ *
  * If method has {@link net.minecraftforge.fml.common.network.simpleimpl.MessageContext}, then current message context
  * will be passed into argument
  */
@@ -20,12 +22,7 @@ public final class RemoteCaller {
     private RemoteCaller() {
     }
 
-    /**
-     * @param method
-     * @param side   where call method
-     * @param params
-     * @param <T>
-     */
+    @SafeVarargs
     public static <T extends Object & NBTSerializable> void callRemote(@Nonnull Method method, @Nonnull Side side, T... params) {
         CallRemoteMethodMessage message = createMessage(method, params);
         if(side.isServer()) {
@@ -35,14 +32,17 @@ public final class RemoteCaller {
         }
     }
 
+    @SafeVarargs
     public static <T extends Object & NBTSerializable> void callOnClient(@Nonnull Method method, @Nonnull EntityPlayerMP player, T... params) {
         IndustriesMod.getNetworkWrapper().sendTo(createMessage(method, params), player);
     }
 
+    @SafeVarargs
     public static <T extends Object & NBTSerializable> void callOnAllClientAround(@Nonnull Method method, @Nonnull NetworkRegistry.TargetPoint point, T... params) {
         IndustriesMod.getNetworkWrapper().sendToAllAround(createMessage(method, params), point);
     }
 
+    @SafeVarargs
     public static <T extends Object & NBTSerializable> void callOnDimensionClients(@Nonnull Method method, int dimId, T... params) {
         IndustriesMod.getNetworkWrapper().sendToDimension(createMessage(method, params), dimId);
     }

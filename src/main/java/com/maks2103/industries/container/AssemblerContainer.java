@@ -1,7 +1,6 @@
 package com.maks2103.industries.container;
 
 import com.maks2103.industries.tileEntity.AssemblerTileEntity;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -9,59 +8,58 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.World;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 import javax.annotation.Nonnull;
 
-public class AssemblerContainer extends Container {
-    private final AssemblerTileEntity assemblerTileEntity;
+public final class AssemblerContainer extends Container {
+    private final AssemblerTileEntity tileEntity;
 
     @SuppressWarnings("MethodCallSideOnly") //Method closeScreen called only in remote world
-    public AssemblerContainer(EntityPlayer player, AssemblerTileEntity assemblerTileEntity) {
-        IInventory playerInventory = player.inventory;
-        this.assemblerTileEntity = assemblerTileEntity;
-        if(!assemblerTileEntity.getWorld().isRemote) {
-            ((EntityPlayerMP) player).connection.sendPacket(assemblerTileEntity.getUpdatePacket());
+    public AssemblerContainer(EntityPlayer player, AssemblerTileEntity tileEntity) {
+        this.tileEntity = tileEntity;
+
+        if(!tileEntity.getWorld().isRemote) {
+            ((EntityPlayerMP) player).connection.sendPacket(tileEntity.getUpdatePacket()); //Try update tileEntity manually
         }
-        IItemHandler itemHandler = assemblerTileEntity.getItemHandler();
+
+        IItemHandler itemHandler = tileEntity.getItemHandler();
         int index = 0;
 
         int userInvXPos;
         int userInvYPos;
-        if(assemblerTileEntity.getState() == AssemblerTileEntity.State.READY) {
+        if(tileEntity.getState() == AssemblerTileEntity.State.READY) {
             for(int i = 0; i < 3; i++) {
                 for(int j = 0; j < 3; j++) {
-                    addSlotToContainer(new SlotItemHandler(itemHandler, index++, 180 / 2 + 34 / 2 * i + 1, 59 / 2 + 34 / 2 * j + 1));
+                    addSlotToContainer(new SlotItemHandler(itemHandler, index++, 91 + 17 * i, 30 + 17 * j));
                 }
             }
-            userInvXPos = 165 / 2;
-            userInvYPos = 182 / 2;
-        } else if(assemblerTileEntity.getState() == AssemblerTileEntity.State.DONE) {
-            addSlotToContainer(new TakeOnlySlot(assemblerTileEntity, 245 / 2, 56 / 2));
-            userInvXPos = 108 / 2;
-            userInvYPos = 132 / 2;
+            userInvXPos = 82;
+            userInvYPos = 91;
+        } else if(tileEntity.getState() == AssemblerTileEntity.State.DONE) {
+            addSlotToContainer(new TakeOnlySlot(tileEntity, 122, 28));
+            userInvXPos = 54;
+            userInvYPos = 66;
         } else {
             userInvXPos = -1000;
             userInvYPos = -1000;
-            if(assemblerTileEntity.getWorld().isRemote) {
+            if(tileEntity.getWorld().isRemote) {
                 Minecraft.getMinecraft().player.closeScreen();
             }
         }
 
         for(int i = 0; i < 4; i++) {
             for(int j = 0; j < 9; j++) {
-                addSlotToContainer(new Slot(playerInventory, (i == 3) ? j : (i * 9 + j + 9), userInvXPos + j * 34 / 2, userInvYPos + i * 34 / 2));
+                addSlotToContainer(new Slot(player.inventory, (i == 3) ? j : (i * 9 + j + 9), userInvXPos + j * 17, userInvYPos + i * 17));
             }
         }
     }
 
-    public AssemblerTileEntity getAssemblerTileEntity() {
-        return assemblerTileEntity;
+    public AssemblerTileEntity getTileEntity() {
+        return tileEntity;
     }
 
     @Override
@@ -79,7 +77,7 @@ public class AssemblerContainer extends Container {
             ItemStack stackOriginal = slot.getStack();
             stack = stackOriginal.copy();
 
-            if(assemblerTileEntity.getState() == AssemblerTileEntity.State.DONE) {
+            if(tileEntity.getState() == AssemblerTileEntity.State.DONE) {
                 if(!this.mergeItemStack(stackOriginal, 1, 37, false)) {
                     return ItemStack.EMPTY;
                 }
@@ -93,8 +91,8 @@ public class AssemblerContainer extends Container {
                         return ItemStack.EMPTY;
                     }
                 }
-                assemblerTileEntity.checkCraftState();
-                assemblerTileEntity.sync();
+                tileEntity.checkCraftState();
+                tileEntity.sync();
             }
 
             if(stackOriginal.isEmpty()) {
@@ -127,6 +125,7 @@ public class AssemblerContainer extends Container {
                     return tileEntity.getOutput().isEmpty();
                 }
 
+                @Nonnull
                 @Override
                 public ItemStack getStackInSlot(int index) {
                     return tileEntity.getOutput();
@@ -161,10 +160,7 @@ public class AssemblerContainer extends Container {
                 @Override
                 public void markDirty() {
                     tileEntity.markDirty();
-                    World world = tileEntity.getWorld();
-                    BlockPos pos = tileEntity.getPos();
-                    IBlockState blockState = world.getBlockState(pos);
-                    world.notifyBlockUpdate(pos, blockState, blockState, 3);
+                    tileEntity.sync();
                 }
 
                 @Override
@@ -183,7 +179,7 @@ public class AssemblerContainer extends Container {
                 }
 
                 @Override
-                public boolean isItemValidForSlot(int index, ItemStack stack) {
+                public boolean isItemValidForSlot(int index, @Nonnull ItemStack stack) {
                     return false;
                 }
 

@@ -4,6 +4,9 @@ import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Assembler can be mutable
+ */
 public interface AssemblerRecipe {
     /**
      * Time in seconds
@@ -11,10 +14,12 @@ public interface AssemblerRecipe {
     int getCraftingTime();
 
     /**
+     * Return items, required for craft.
      * 8 items maximum!
      */
     @Nonnull
     ItemStack[] getCraftItems();
+
 
     @Nonnull
     ItemStack getOutputItem();
@@ -22,5 +27,8 @@ public interface AssemblerRecipe {
     @Nonnull
     AssemblerPreviewModel getPreviewModel();
 
+    /**
+     * Recipe id. Must be unique!
+     */
     int getId();
 }

@@ -8,6 +8,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
+@Deprecated //TODO remove test recipe
 public class TestAsseblerRecipe2 implements AssemblerRecipe {
     @Override
     public int getCraftingTime() {
