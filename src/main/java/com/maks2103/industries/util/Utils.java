@@ -13,47 +13,27 @@ public final class Utils {
     private Utils() {
     }
 
-    public static boolean allMatch(@Nonnull List<ItemStack> actual, List<ItemStack> excepted) {
+    public static boolean canCraftItem(@Nonnull List<ItemStack> actual, List<ItemStack> excepted) {
         List<ItemStack> fixedIn = spliceItemStackList(actual);
         List<ItemStack> fixedOut = spliceItemStackList(excepted);
 
         ListIterator<ItemStack> inIterator = fixedIn.listIterator();
-        ListIterator<ItemStack> outIterator = fixedOut.listIterator();
 
         while(inIterator.hasNext()) {
             ItemStack inElem = inIterator.next();
             int[] inElemOreDictIds = OreDictionary.getOreIDs(inElem);
-            boolean ok = false;
+
+            ListIterator<ItemStack> outIterator = fixedOut.listIterator();
             while(outIterator.hasNext()) {
                 ItemStack outElem = outIterator.next();
                 int[] outElemOreDictIds = OreDictionary.getOreIDs(outElem);
                 if((inElem.getItem() == outElem.getItem() || containsAny(inElemOreDictIds, outElemOreDictIds)) && inElem.getCount() >= outElem.getCount()) {
                     inIterator.remove();
                     outIterator.remove();
-                    ok = true;
-                    break;
                 }
             }
-            if(!ok) return false;
         }
-        return true;
-//
-//        for(ItemStack itemStack : fixedIn) {
-//            boolean ok = false;
-//            for(ItemStack stack : fixedOut) {
-//                int[] ids = OreDictionary.getOreIDs(itemStack);
-//                int[] stackIds = OreDictionary.getOreIDs(stack);
-//                if(itemStack.getItem() == stack.getItem() || containsAny(ids, stackIds)) {
-//                    fixedIn.remove(itemStack);
-//                    fixedOut.remove(stack);
-//                    ok = true;
-//                }
-//            }
-//            if(!ok) {
-//                return false;
-//            }
-//        }
-//        return true;
+        return fixedOut.isEmpty();
     }
 
     public static boolean containsAny(int[] first, int[] second) {
@@ -81,7 +61,7 @@ public final class Utils {
                         continue;
                     }
                     ItemStack stack1 = in.get(j);
-                    if(stack.getItem().equals(stack1.getItem())) {
+                    if(stack.getItem().equals(stack1.getItem()) && stack != stack1) {
                         stack.setCount(stack.getCount() + stack1.getCount());
                         in.remove(stack1);
                         containsDuplicates = true;

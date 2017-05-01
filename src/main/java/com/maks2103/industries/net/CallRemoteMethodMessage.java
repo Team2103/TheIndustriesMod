@@ -3,6 +3,7 @@ package com.maks2103.industries.net;
 import com.maks2103.industries.util.serialization.NBTSerializable;
 import com.maks2103.industries.util.serialization.NBTSerializableSerializer;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
@@ -10,6 +11,7 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
@@ -88,14 +90,19 @@ public final class CallRemoteMethodMessage implements IMessage {
 
     public static final class Handler implements IMessageHandler<CallRemoteMethodMessage, IMessage> {
 
+        @SuppressWarnings("MethodCallSideOnly")
         @Override
         public IMessage onMessage(CallRemoteMethodMessage message, MessageContext ctx) {
-            MinecraftServer server = ctx.getServerHandler().playerEntity.getServer();
-            if(server == null) {
-                System.err.println("WTF!");
-                return null;
+            if(ctx.side == Side.SERVER) {
+                MinecraftServer server = ctx.getServerHandler().playerEntity.getServer();
+                if(server == null) {
+                    System.err.println("WTF!");
+                    return null;
+                }
+                server.addScheduledTask(() -> processMessage(message, ctx));
+            } else {
+                Minecraft.getMinecraft().addScheduledTask(() -> processMessage(message, ctx));
             }
-            server.addScheduledTask(() -> processMessage(message, ctx));
             return null;
         }
 

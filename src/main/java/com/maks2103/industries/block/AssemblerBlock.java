@@ -28,7 +28,9 @@ public class AssemblerBlock extends BlockContainer {
     @Nullable
     @Override
     public TileEntity createNewTileEntity(@Nonnull World worldIn, int meta) {
-        return new AssemblerTileEntity();
+        AssemblerTileEntity tileEntity = new AssemblerTileEntity();
+        tileEntity.setState(AssemblerTileEntity.State.READY);
+        return tileEntity;
     }
 
     @Override
@@ -47,5 +49,13 @@ public class AssemblerBlock extends BlockContainer {
             }
         }
         return true;
+    }
+
+    @Override
+    public void breakBlock(World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
+        AssemblerTileEntity tileEntity = (AssemblerTileEntity) worldIn.getTileEntity(pos);
+        if(tileEntity != null)
+            tileEntity.dropAllItems();
+        super.breakBlock(worldIn, pos, state);
     }
 }

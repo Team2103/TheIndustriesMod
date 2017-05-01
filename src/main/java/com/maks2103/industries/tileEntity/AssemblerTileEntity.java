@@ -2,11 +2,14 @@ package com.maks2103.industries.tileEntity;
 
 import com.maks2103.industries.assembler.AssemblerRecipe;
 import com.maks2103.industries.assembler.AssemblerRecipeManager;
+import com.maks2103.industries.gui.AssemblerGui;
+import com.maks2103.industries.net.RemoteCaller;
 import com.maks2103.industries.util.ListenableItemStackHandler;
 import com.maks2103.industries.util.SerializableEnergyStorage;
 import com.maks2103.industries.util.SerializableMutableBlockPos;
 import com.maks2103.industries.util.Utils;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -14,6 +17,7 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
@@ -26,6 +30,7 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +41,15 @@ import java.util.concurrent.atomic.AtomicReference;
 public class AssemblerTileEntity extends TileEntity implements SerializableEnergyStorage.Listener, ListenableItemStackHandler.Listener, ITickable {
     private static final int MAX_ENERGY = 64000;
     private static final int MAX_RECEIVE = 30;
+    private static final Method CRAFT_OK_METHOD;
+
+    static {
+        try {
+            CRAFT_OK_METHOD = AssemblerGui.class.getDeclaredMethod("craftOk");
+        } catch (NoSuchMethodException e) {
+            throw new Error(e);
+        }
+    }
 
     private final ListenableItemStackHandler itemHandler;
     private final SerializableEnergyStorage energyStorage;
@@ -53,12 +67,14 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         itemHandler.setListener(this);
         energyStorage = new SerializableEnergyStorage(MAX_ENERGY, MAX_RECEIVE, 30);
         energyStorage.setListener(this);
-        state = new AtomicReference<>(State.READY);
+        state = new AtomicReference<>(State.ERROR);
         output = new AtomicReference<>(ItemStack.EMPTY);
         progress = 0;
         validate();
 
         checkCraftState();
+
+        markDirty();
     }
 
     public boolean canCraft() {
@@ -73,10 +89,15 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         return state.get();
     }
 
+    public void setState(State state) {
+        this.state.set(state);
+    }
+
     public ItemStack getOutput() {
         return output.get();
     }
 
+    @SuppressWarnings("MethodCallSideOnly") // Method closeScreen called in remote world
     public ItemStack takeOutput() {
         ItemStack out = output.get();
         output.set(ItemStack.EMPTY);
@@ -160,7 +181,7 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         readFromNBT(pkt.getNbtCompound());
     }
 
-    @Nullable
+    @Nonnull
     @Override
     public SPacketUpdateTileEntity getUpdatePacket() {
         NBTTagCompound compound = new NBTTagCompound();
@@ -187,6 +208,12 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         }
     }
 
+    public void sync() {
+        markDirty();
+        IBlockState state = getWorld().getBlockState(getPos());
+        getWorld().notifyBlockUpdate(getPos(), state, state, 3);
+    }
+
     private void prewRecipe() {
         List<AssemblerRecipe> recipes = AssemblerRecipeManager.getRecipes();
         int idx = (currentRecipe == null) ? 0 : recipes.indexOf(currentRecipe);
@@ -207,23 +234,17 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
         world.notifyBlockUpdate(getPos(), blockState, blockState, 3);
     }
 
+    @SuppressWarnings("MethodCallSideOnly") // Method closeScreen called in remote world
     private void tryCraft() {
         if(canCraft && state.get() == State.READY) {
             AssemblerRecipe recipe = currentRecipe;
             state.set(State.CRAFTING);
             takeItems(recipe);
-//            TIMER.schedule(new TimerTask() {
-//                @Override
-//                public void run() {
-//                    System.out.println("Complete");
-//                    output.set(recipe.getOutputItem().copy());
-//                    state.set(State.DONE);
-//                }
-//            }, currentRecipe.getCraftingTime() * 1000);
             progress = currentRecipe.getCraftingTime() * 20; //x sec * 20 ticks/sec
+            sync();
+            RemoteCaller.callRemote(CRAFT_OK_METHOD, Side.CLIENT);
         }
     }
-
     private void takeItems(AssemblerRecipe recipe) {
         List<ItemStack> splicedIn = Utils.spliceItemStackList(Arrays.asList(recipe.getCraftItems()));
         List<ItemStack> ourInv = getInventoryItemStacks();
@@ -271,12 +292,12 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
     /**
      * Do not notify update
      */
-    private void checkCraftState() {
+    public void checkCraftState() {
         if(currentRecipe == null) {
             canCraft = false;
             return;
         }
-        canCraft = Utils.allMatch(getInventoryItemStacks(), Arrays.asList(currentRecipe.getCraftItems()));
+        canCraft = Utils.canCraftItem(getInventoryItemStacks(), Arrays.asList(currentRecipe.getCraftItems()));
     }
 
     private List<ItemStack> getInventoryItemStacks() {
@@ -300,6 +321,23 @@ public class AssemblerTileEntity extends TileEntity implements SerializableEnerg
                 state.set(State.DONE);
                 output.set(currentRecipe.getOutputItem().copy());
             }
+            sync();
+        }
+    }
+
+    public void dropAllItems() {
+        BlockPos pos = getPos();
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+        for(int i = 0; i < itemHandler.getSlots(); i++) {
+            ItemStack stack = itemHandler.getStackInSlot(i);
+            if(!stack.isEmpty()) {
+                InventoryHelper.spawnItemStack(world, x, y, z, stack);
+            }
+        }
+        if(!output.get().isEmpty()) {
+            InventoryHelper.spawnItemStack(world, x, y, z, output.get());
         }
     }
 

@@ -2,7 +2,9 @@ package com.maks2103.industries.container;
 
 import com.maks2103.industries.tileEntity.AssemblerTileEntity;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
@@ -19,24 +21,41 @@ import javax.annotation.Nonnull;
 public class AssemblerContainer extends Container {
     private final AssemblerTileEntity assemblerTileEntity;
 
-    public AssemblerContainer(IInventory playerInventory, AssemblerTileEntity assemblerTileEntity) {
+    @SuppressWarnings("MethodCallSideOnly") //Method closeScreen called only in remote world
+    public AssemblerContainer(EntityPlayer player, AssemblerTileEntity assemblerTileEntity) {
+        IInventory playerInventory = player.inventory;
         this.assemblerTileEntity = assemblerTileEntity;
-
+        if(!assemblerTileEntity.getWorld().isRemote) {
+            ((EntityPlayerMP) player).connection.sendPacket(assemblerTileEntity.getUpdatePacket());
+        }
         IItemHandler itemHandler = assemblerTileEntity.getItemHandler();
         int index = 0;
+
+        int userInvXPos;
+        int userInvYPos;
         if(assemblerTileEntity.getState() == AssemblerTileEntity.State.READY) {
             for(int i = 0; i < 3; i++) {
                 for(int j = 0; j < 3; j++) {
                     addSlotToContainer(new SlotItemHandler(itemHandler, index++, 180 / 2 + 34 / 2 * i + 1, 59 / 2 + 34 / 2 * j + 1));
                 }
             }
+            userInvXPos = 165 / 2;
+            userInvYPos = 182 / 2;
+        } else if(assemblerTileEntity.getState() == AssemblerTileEntity.State.DONE) {
+            addSlotToContainer(new TakeOnlySlot(assemblerTileEntity, 245 / 2, 56 / 2));
+            userInvXPos = 108 / 2;
+            userInvYPos = 132 / 2;
         } else {
-            addSlotToContainer(new TakeOnlySlot(assemblerTileEntity, 10, 10));
+            userInvXPos = -1000;
+            userInvYPos = -1000;
+            if(assemblerTileEntity.getWorld().isRemote) {
+                Minecraft.getMinecraft().player.closeScreen();
+            }
         }
 
         for(int i = 0; i < 4; i++) {
             for(int j = 0; j < 9; j++) {
-                addSlotToContainer(new Slot(playerInventory, (i == 3) ? j : (i * 9 + j + 9), 165 / 2 + j * 34 / 2, 182 / 2 + i * 34 / 2));
+                addSlotToContainer(new Slot(playerInventory, (i == 3) ? j : (i * 9 + j + 9), userInvXPos + j * 34 / 2, userInvYPos + i * 34 / 2));
             }
         }
     }
@@ -53,13 +72,50 @@ public class AssemblerContainer extends Container {
     @Nonnull
     @Override
     public ItemStack transferStackInSlot(@Nonnull EntityPlayer playerIn, int index) {
+        ItemStack stack = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(index);
-        return slot != null ? slot.getStack() : ItemStack.EMPTY;
+
+        if(slot != null && slot.getHasStack()) {
+            ItemStack stackOriginal = slot.getStack();
+            stack = stackOriginal.copy();
+
+            if(assemblerTileEntity.getState() == AssemblerTileEntity.State.DONE) {
+                if(!this.mergeItemStack(stackOriginal, 1, 37, false)) {
+                    return ItemStack.EMPTY;
+                }
+            } else {
+                if(index < 9) { //0 ... 8 - crafting input
+                    if(!this.mergeItemStack(stackOriginal, 9, 45, true)) {
+                        return ItemStack.EMPTY;
+                    }
+                } else {
+                    if(!this.mergeItemStack(stackOriginal, 0, 9, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                }
+                assemblerTileEntity.checkCraftState();
+                assemblerTileEntity.sync();
+            }
+
+            if(stackOriginal.isEmpty()) {
+                slot.putStack(ItemStack.EMPTY);
+            } else {
+                slot.onSlotChanged();
+            }
+
+            if(stackOriginal.getCount() == stack.getCount()) {
+                return ItemStack.EMPTY;
+            }
+
+            slot.onTake(playerIn, stackOriginal);
+        }
+
+        return stack;
     }
 
     private static final class TakeOnlySlot extends Slot {
 
-        public TakeOnlySlot(AssemblerTileEntity tileEntity, int xPosition, int yPosition) {
+        TakeOnlySlot(AssemblerTileEntity tileEntity, int xPosition, int yPosition) {
             super(new IInventory() {
                 @Override
                 public int getSizeInventory() {

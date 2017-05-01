@@ -67,12 +67,12 @@ public enum ModGuis {
         @SideOnly(Side.CLIENT)
         @Override
         public Object getClientGuiElement(EntityPlayer player, World world, BlockPos blockPos) {
-            return new AssemblerGui(new AssemblerContainer(player.inventory, (AssemblerTileEntity) world.getTileEntity(blockPos)));
+            return new AssemblerGui(new AssemblerContainer(player, (AssemblerTileEntity) world.getTileEntity(blockPos)));
         }
 
         @Override
         public Object getServerGuiElement(EntityPlayer player, World world, BlockPos blockPos) {
-            return new AssemblerContainer(player.inventory, (AssemblerTileEntity) world.getTileEntity(blockPos));
+            return new AssemblerContainer(player, (AssemblerTileEntity) world.getTileEntity(blockPos));
         }
     }
 
@@ -86,12 +86,12 @@ public enum ModGuis {
         @SideOnly(Side.CLIENT)
         @Override
         public Object getClientGuiElement(EntityPlayer player, World world, BlockPos blockPos) {
-            return new AssemblerOutputGui(new AssemblerContainer(player.inventory, (AssemblerTileEntity) world.getTileEntity(blockPos)));
+            return new AssemblerOutputGui(new AssemblerContainer(player, (AssemblerTileEntity) world.getTileEntity(blockPos)));
         }
 
         @Override
         public Object getServerGuiElement(EntityPlayer player, World world, BlockPos blockPos) {
-            return new AssemblerContainer(player.inventory, (AssemblerTileEntity) world.getTileEntity(blockPos));
+            return new AssemblerContainer(player, (AssemblerTileEntity) world.getTileEntity(blockPos));
         }
     }
 }

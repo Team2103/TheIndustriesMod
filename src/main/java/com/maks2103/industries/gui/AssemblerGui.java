@@ -5,6 +5,7 @@ import com.maks2103.industries.container.AssemblerContainer;
 import com.maks2103.industries.net.RemoteCaller;
 import com.maks2103.industries.tileEntity.AssemblerTileEntity;
 import com.maks2103.industries.util.SerializableMutableBlockPos;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -13,6 +14,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -87,15 +89,20 @@ public class AssemblerGui extends GuiContainer {
     }
 
     private void previousRecipe() {
-        RemoteCaller.callRemote(PREW_RECIPE_METHOD, Side.CLIENT, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
+        RemoteCaller.callRemote(PREW_RECIPE_METHOD, Side.SERVER, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
     }
 
     private void nextRecipe() {
-        RemoteCaller.callRemote(NEXT_RECIPE_METHOD, Side.CLIENT, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
+        RemoteCaller.callRemote(NEXT_RECIPE_METHOD, Side.SERVER, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
     }
 
     private void tryCraft() {
-        RemoteCaller.callRemote(TRY_CRAFT_METHOD, Side.CLIENT, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
+        RemoteCaller.callRemote(TRY_CRAFT_METHOD, Side.SERVER, new SerializableMutableBlockPos(assemblerContainer.getAssemblerTileEntity().getPos()));
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static void craftOk() {
+        Minecraft.getMinecraft().player.closeScreen();
     }
 
     @Override

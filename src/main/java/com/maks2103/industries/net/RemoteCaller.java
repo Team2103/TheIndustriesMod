@@ -20,9 +20,15 @@ public final class RemoteCaller {
     private RemoteCaller() {
     }
 
+    /**
+     * @param method
+     * @param side   where call method
+     * @param params
+     * @param <T>
+     */
     public static <T extends Object & NBTSerializable> void callRemote(@Nonnull Method method, @Nonnull Side side, T... params) {
         CallRemoteMethodMessage message = createMessage(method, params);
-        if(side.isClient()) {
+        if(side.isServer()) {
             IndustriesMod.getNetworkWrapper().sendToServer(message);
         } else {
             IndustriesMod.getNetworkWrapper().sendToAll(message);

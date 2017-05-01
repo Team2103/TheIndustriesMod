@@ -49,7 +49,7 @@ public class UtilsTest {
                 new ItemStack(Blocks.BRICK_BLOCK, 1));
         List<ItemStack> craft = Arrays.asList(new ItemStack(Items.ARROW, 10),
                 new ItemStack(Blocks.BRICK_BLOCK, 1));
-        assertTrue(Utils.allMatch(elements, craft));
+        assertTrue(Utils.canCraftItem(elements, craft));
     }
 
     @Test
