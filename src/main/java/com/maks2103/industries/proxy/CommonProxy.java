@@ -10,14 +10,18 @@ import com.maks2103.industries.registry.ModBlocks;
 import com.maks2103.industries.registry.ModItems;
 import com.maks2103.industries.registry.ModTileEntities;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class CommonProxy {
     @SidedProxy
@@ -53,15 +57,31 @@ public class CommonProxy {
         ModBlocks.register(event.getRegistry());
     }
 
+    public void addScheduledTask(MessageContext context, Runnable runnable) {
+        if(context.getServerHandler().playerEntity.world instanceof WorldServer) {
+            ((WorldServer) context.getServerHandler().playerEntity.world).addScheduledTask(runnable);
+        }
+    }
+
     public static class ServerProxy extends CommonProxy {
     }
 
     public static class ClientProxy extends CommonProxy {
+        @SideOnly(Side.CLIENT)
         @Override
         public void init(FMLInitializationEvent event) {
             super.init(event);
 
             IndustriesMod.getNetworkWrapper().registerMessage(CallRemoteMethodMessage.Handler.class, CallRemoteMethodMessage.class, 0, Side.CLIENT);
+        }
+
+        @SideOnly(Side.CLIENT)
+        @Override
+        public void addScheduledTask(MessageContext context, Runnable runnable) {
+            if(context.side == Side.CLIENT)
+                Minecraft.getMinecraft().addScheduledTask(runnable);
+            else
+                super.addScheduledTask(context, runnable);
         }
     }
 }
