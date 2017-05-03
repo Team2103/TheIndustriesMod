@@ -19,6 +19,7 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class CommonProxy {
     @SidedProxy
@@ -70,12 +71,15 @@ public class CommonProxy {
     public static class ServerProxy extends CommonProxy {
     }
 
+    @SideOnly(Side.CLIENT)
     public static class ClientProxy extends CommonProxy {
         @Override
         public void init(FMLInitializationEvent event) {
             super.init(event);
 
             IndustriesMod.getNetworkWrapper().registerMessage(CallRemoteMethodMessage.Handler.class, CallRemoteMethodMessage.class, 0, Side.CLIENT);
+
+            ModItems.registerClient();
         }
     }
 }
