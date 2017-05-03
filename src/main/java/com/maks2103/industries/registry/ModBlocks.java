@@ -12,5 +12,7 @@ public final class ModBlocks {
 
     public static void register(IForgeRegistry<Block> blockRegistry) {
         blockRegistry.register(ASSEMBLER_BLOCK);
+
+        IngotRegistry.registerBlock(blockRegistry);
     }
 }

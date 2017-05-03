@@ -20,5 +20,7 @@ public final class ModItems {
         ASSEMBLER_BLOCK_ITEM.setUnlocalizedName("assembler_block_item");
         ASSEMBLER_BLOCK_ITEM.setCreativeTab(IndustriesMod.CREATIVE_TAB);
         registry.register(ASSEMBLER_BLOCK_ITEM);
+
+        IngotRegistry.registerItems(registry);
     }
 }

@@ -71,4 +71,8 @@ public final class Utils {
         }
         return in;
     }
+
+    public static String capitalizeString(@Nonnull String string) {
+        return string.substring(0, 1).toUpperCase() + string.substring(1);
+    }
 }
