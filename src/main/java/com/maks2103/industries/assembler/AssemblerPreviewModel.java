@@ -6,6 +6,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 /**
  * This class used by {@link com.maks2103.industries.gui.AssemblerGui} for render crafting recipe preview
  */
+@FunctionalInterface
 @SideOnly(Side.CLIENT)
 public interface AssemblerPreviewModel {
     /**
