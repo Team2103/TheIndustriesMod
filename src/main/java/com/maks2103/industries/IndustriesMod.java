@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 
 @SuppressWarnings("unused")
@@ -75,5 +76,9 @@ public class IndustriesMod {
 
     public static SimpleNetworkWrapper getNetworkWrapper() {
         return NETWORK_WRAPPER;
+    }
+
+    public void addScheduledTask(MessageContext context, Runnable task) {
+        getProxy().addScheduledTask(context, task);
     }
 }
