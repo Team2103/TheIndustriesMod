@@ -70,7 +70,8 @@ public class CommonProxy {
 
     public static void registerOre(String name, ItemStack stack) {
         OreDictWriter.add(name, stack);
-
+    }
+    
     public void addScheduledTask(MessageContext context, Runnable runnable) {
         if(context.getServerHandler().playerEntity.world instanceof WorldServer) {
             ((WorldServer) context.getServerHandler().playerEntity.world).addScheduledTask(runnable);
