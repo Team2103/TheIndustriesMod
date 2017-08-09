@@ -1,0 +1,3 @@
+Eng: A cheap and weak low-end CPU. It is still remembers the invention of the Tetris.
+
+Ru: Дешёвый и слабый низкоуровневый процессор. Помнит изобретение Тетриса.

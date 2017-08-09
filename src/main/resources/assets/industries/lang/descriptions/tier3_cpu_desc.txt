@@ -1,0 +1,3 @@
+Eng: A high-end CPU. Can you run Space Engineers with it?
+
+Ru: Центральный процессор высокой мощности. Можешь запустить Space Engineers с этим?
