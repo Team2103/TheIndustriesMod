@@ -1,8 +1,8 @@
 item.research_book.name=Research Book
 tile.assembler_block.name=Robot Assembler
-tier1_cpu_desc=A cheap and weak low-end CPU. Remembers invention of the Tetris.
-tier1_chip_desc=Simple, but important part of any computer. Can be improved.
-tier2_cpu_desc=A medium-end CPU. Used to be high-level a couple years ago.
-tier2_chip_desc=A medium-end microchip. Still can be improved.
-tier3_cpu_desc=A high-end CPU. Can you play Space Engineers with it?
-tier3_chip_desc=A high-end microchip. Don't you think it's the top of technologies?
+item.tier1.cpu.desc=A cheap and weak low-end CPU. Remembers invention of the Tetris.
+item.tier1.chip.desc=Simple, but important part of any computer. Can be improved.
+item.tier2.cpu.desc=A medium-end CPU. Used to be high-level a couple years ago.
+item.tier2.chip.desc=A medium-end microchip. Still can be improved.
+item.tier3.cpu.desc=A high-end CPU. Can you play Space Engineers with it?
+item.tier3.chip.desc=A high-end microchip. Don't you think it's the top of technologies?
