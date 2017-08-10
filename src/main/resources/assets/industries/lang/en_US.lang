@@ -4,5 +4,6 @@ item.tier1.cpu.desc=A cheap and weak low-end CPU. Remembers invention of the Tet
 item.tier1.chip.desc=Simple, but important part of any computer. Can be improved.
 item.tier2.cpu.desc=A medium-end CPU. Used to be high-level a couple years ago.
 item.tier2.chip.desc=A medium-end microchip. Still can be improved.
-item.tier3.cpu.desc=A high-end CPU. Can you play Space Engineers with it?
+item.tier3.cpu.desc=A high-end CPU. Can you play Cosmic Mechanics with it?
 item.tier3.chip.desc=A high-end microchip. Don't you think it's the top of technologies?
+item.ender.cpu.desc=Uses EnderLink™ technology for instant data transceiving.
